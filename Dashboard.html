@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beecoss — Analytics Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --navy: #253B74;
+  --navy-dark: #1a2a56;
+  --navy-light: #2f4a90;
+  --green: #91be3f;
+  --green-dark: #7aa533;
+  --green-light: #a8d44e;
+  --blue: #1b75bc;
+  --blue-light: #2889d4;
+  --bg: #f4f6fb;
+  --sidebar-w: 260px;
+  --card-radius: 14px;
+  --white: #ffffff;
+  --text: #1a1a2e;
+  --text-muted: #6b7280;
+  --border: rgba(37,59,116,0.1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Cairo', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--navy);
+  min-height: 100vh;
+  position: fixed;
+  top: 0; right: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  box-shadow: -4px 0 24px rgba(37,59,116,0.2);
+}
+
+.sidebar-logo {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Beecoss SVG Logo */
+.logo-mark {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+}
+
+.logo-text {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+.logo-text span { color: var(--green); }
+
+.sidebar-label {
+  padding: 20px 24px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 24px;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  border-right: 3px solid transparent;
+  transition: all 0.2s;
+  font-size: 14px;
+  font-weight: 500;
+}
+.nav-item:hover { color: #fff; background: rgba(255,255,255,0.06); }
+.nav-item.active {
+  color: #fff;
+  background: rgba(145,190,63,0.15);
+  border-right-color: var(--green);
+}
+.nav-item svg { width: 18px; height: 18px; flex-shrink: 0; opacity: 0.8; }
+.nav-item.active svg { opacity: 1; }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 20px 24px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  font-size: 12px;
+  color: rgba(255,255,255,0.35);
+  text-align: center;
+}
+
+/* ── Main ── */
+.main {
+  margin-right: var(--sidebar-w);
+  flex: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.topbar-left h1 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.topbar-left p {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.period-select {
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-family: 'Cairo', sans-serif;
+  color: var(--navy);
+  background: var(--white);
+  cursor: pointer;
+  outline: none;
+}
+
+.btn-add {
+  background: var(--green);
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: 'Cairo', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s;
+}
+.btn-add:hover { background: var(--green-dark); }
+
+.content { padding: 28px 32px; flex: 1; }
+
+/* ── Page Tabs ── */
+.page-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.ptab {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  font-size: 13px;
+  font-family: 'Cairo', sans-serif;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ptab:hover { border-color: var(--blue); color: var(--blue); }
+.ptab.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+  font-weight: 600;
+}
+.ptab-all.active { background: var(--blue); border-color: var(--blue); }
+
+.ptab-wrap { position: relative; display: inline-flex; align-items: center; }
+.ptab-wrap .ptab { padding-left: 34px; }
+.ptab-delete {
+  position: absolute; left: 8px;
+  width: 18px; height: 18px; border-radius: 4px;
+  border: none; background: transparent; color: var(--text-muted);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: all 0.15s; padding: 0;
+}
+.ptab-wrap:hover .ptab-delete { opacity: 1; }
+.ptab-delete:hover { background: rgba(217,83,79,0.12); color: #d9534f; }
+.ptab-delete svg { width: 12px; height: 12px; pointer-events: none; }
+
+.demo-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(240,159,39,0.12); border: 1px solid rgba(240,159,39,0.35);
+  color: #a0620a; font-size: 11px; font-weight: 600;
+  padding: 4px 10px; border-radius: 6px; margin-bottom: 16px;
+}
+
+.del-modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(10,20,50,0.6); z-index: 300;
+  align-items: center; justify-content: center;
+}
+.del-modal-overlay.open { display: flex; }
+.del-modal {
+  background: var(--white); border-radius: 16px; padding: 28px 32px;
+  width: 400px; max-width: 95vw;
+  box-shadow: 0 20px 60px rgba(37,59,116,0.25);
+  animation: modalIn 0.2s ease; text-align: center;
+}
+.del-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: rgba(217,83,79,0.1);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px;
+}
+.del-icon svg { width: 24px; height: 24px; color: #d9534f; }
+.del-modal h3 { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+.del-modal p { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 6px; }
+.del-warning {
+  background: rgba(217,83,79,0.07); border: 1px solid rgba(217,83,79,0.2);
+  border-radius: 8px; padding: 9px 14px;
+  font-size: 12px; color: #a32d2d; font-weight: 600; margin: 12px 0 20px;
+}
+.del-actions { display: flex; gap: 10px; justify-content: center; }
+.btn-delete-confirm {
+  padding: 9px 22px; border-radius: 8px; border: none;
+  background: #d9534f; color: #fff;
+  font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: background 0.2s;
+}
+.btn-delete-confirm:hover { background: #c0392b; }
+
+/* ── Metrics Grid ── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.metric-card {
+  background: var(--white);
+  border-radius: var(--card-radius);
+  padding: 18px 18px 16px;
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  animation: fadeUp 0.4s ease both;
+}
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.metric-card.c-navy::before { background: var(--navy); }
+.metric-card.c-green::before { background: var(--green); }
+.metric-card.c-blue::before { background: var(--blue); }
+
+.metric-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+.metric-icon.navy { background: rgba(37,59,116,0.1); }
+.metric-icon.green { background: rgba(145,190,63,0.12); }
+.metric-icon.blue { background: rgba(27,117,188,0.1); }
+.metric-icon svg { width: 18px; height: 18px; }
+.metric-icon.navy svg { color: var(--navy); }
+.metric-icon.green svg { color: var(--green-dark); }
+.metric-icon.blue svg { color: var(--blue); }
+
+.metric-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; }
+.metric-val { font-size: 24px; font-weight: 800; color: var(--navy); font-family: 'Outfit', sans-serif; }
+.metric-delta { font-size: 11px; margin-top: 4px; font-weight: 600; }
+.up { color: #3a9c6e; }
+.down { color: #d9534f; }
+
+/* ── Charts Row ── */
+.charts-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: var(--white);
+  border-radius: var(--card-radius);
+  padding: 22px 24px;
+  border: 1px solid var(--border);
+  animation: fadeUp 0.5s ease both;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  display: inline-block;
+}
+.card-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; }
+
+/* ── Device donut ── */
+.device-list { margin-top: 14px; }
+.device-row-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.device-row-item:last-child { border-bottom: none; }
+.device-name { display: flex; align-items: center; gap: 8px; font-weight: 500; color: var(--navy); }
+.device-badge {
+  display: inline-block;
+  width: 10px; height: 10px; border-radius: 3px;
+}
+
+/* ── Exit Sections ── */
+.exit-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+.exit-name { width: 170px; flex-shrink: 0; color: var(--text); font-weight: 500; }
+.exit-bar-bg { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+.exit-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+.exit-pct { width: 38px; text-align: left; color: var(--text-muted); font-weight: 600; font-family: 'Outfit', sans-serif; font-size: 12px; }
+
+/* ── All Pages Table ── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  text-align: right;
+  padding: 10px 14px;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1.5px solid var(--border);
+  background: var(--bg);
+}
+tbody td {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: rgba(37,59,116,0.03); }
+.td-page { font-weight: 600; color: var(--navy); }
+.conv-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 11px;
+  font-family: 'Outfit', sans-serif;
+}
+.pill-green { background: rgba(145,190,63,0.15); color: #5f8a1a; }
+.pill-orange { background: rgba(240,159,39,0.15); color: #a0620a; }
+.pill-red { background: rgba(226,75,74,0.1); color: #a32d2d; }
+
+/* ── Bottom Row ── */
+.bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+
+/* ── Modal ── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(10,20,50,0.55);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 32px;
+  width: 460px;
+  max-width: 95vw;
+  box-shadow: 0 20px 60px rgba(37,59,116,0.2);
+  animation: modalIn 0.25s ease;
+}
+@keyframes modalIn { from { transform: scale(0.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.modal h3 { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+.modal p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--navy); margin-bottom: 5px; }
+.form-group input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: border 0.2s;
+}
+.form-group input:focus { border-color: var(--blue); }
+.modal-hint {
+  background: rgba(145,190,63,0.1);
+  border-right: 3px solid var(--green);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #4a7010;
+  margin-bottom: 20px;
+}
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.btn-ghost {
+  padding: 9px 20px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  font-family: 'Cairo', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.btn-confirm {
+  padding: 9px 20px;
+  border-radius: 8px;
+  border: none;
+  background: var(--navy);
+  color: #fff;
+  font-family: 'Cairo', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-confirm:hover { background: var(--navy-dark); }
+
+/* ── Code Snippet ── */
+.code-section {
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+.code-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.btn-copy {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1.5px solid var(--green);
+  background: transparent;
+  color: var(--green-dark);
+  font-family: 'Cairo', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-copy:hover { background: rgba(145,190,63,0.1); }
+.btn-copy.copied { background: var(--green); color: #fff; border-color: var(--green); }
+.code-block {
+  background: #0f172a;
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 11.5px;
+  color: #93c5fd;
+  overflow-x: auto;
+  line-height: 1.7;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.code-block .cmt { color: #4ade80; }
+.code-block .str { color: #fbbf24; }
+.code-block .kw { color: #c084fc; }
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--navy);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 999;
+  transition: transform 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ── */
+@media(max-width: 1200px) {
+  .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media(max-width: 960px) {
+  :root { --sidebar-w: 0px; }
+  .sidebar { display: none; }
+  .charts-row, .bottom-row { grid-template-columns: 1fr; }
+  .content { padding: 20px 16px; }
+  .topbar { padding: 0 16px; }
+}
+@media(max-width: 680px) {
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <!-- Beecoss Logo SVG -->
+    <svg class="logo-mark" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="42" height="42" rx="10" fill="#91be3f"/>
+      <path d="M10 21 L21 10 L32 21 L21 32 Z" fill="white" opacity="0.9"/>
+      <circle cx="21" cy="21" r="5" fill="#253B74"/>
+      <path d="M14 14 L21 10 L21 32 L14 28 Z" fill="#1b75bc" opacity="0.6"/>
+    </svg>
+    <div>
+      <div class="logo-text">Bee<span>coss</span></div>
+    </div>
+  </div>
+
+  <div class="sidebar-label">التحليلات</div>
+  <div class="nav-item active" onclick="setNav(this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    نظرة عامة
+  </div>
+  <div class="nav-item" onclick="setNav(this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    الزوار
+  </div>
+  <div class="nav-item" onclick="setNav(this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+    التحويلات
+  </div>
+  <div class="nav-item" onclick="setNav(this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    الصفحات
+  </div>
+
+  <div class="sidebar-label">الإعدادات</div>
+  <div class="nav-item" onclick="setNav(this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41"/></svg>
+    الإعدادات
+  </div>
+
+  <div class="sidebar-footer">Beecoss Analytics v1.0</div>
+</aside>
+
+<!-- ── Main ── -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1 id="page-heading">نظرة عامة — جميع الصفحات</h1>
+      <p id="page-sub">آخر 30 يوم • يتم التحديث تلقائياً</p>
+    </div>
+    <div class="topbar-right">
+      <select class="period-select" id="period-sel" onchange="onPeriodChange()">
+        <option value="7">آخر 7 أيام</option>
+        <option value="30" selected>آخر 30 يوم</option>
+        <option value="90">آخر 90 يوم</option>
+      </select>
+      <button class="btn-add" onclick="openModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        إضافة صفحة
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- Page Tabs -->
+    <div id="demo-notice" class="demo-badge">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      البيانات الظاهرة حالياً تجريبية (Demo) — ستُستبدل بالبيانات الحقيقية بعد ربط كود Tracking
+    </div>
+    <div class="page-tabs" id="page-tabs">
+      <button class="ptab ptab-all active" data-id="all" onclick="switchPage('all', this)">جميع الصفحات</button>
+      <div class="ptab-wrap">
+        <button class="ptab" data-id="vente" onclick="switchPage('vente', this)">LP Management équipe vente</button>
+        <button class="ptab-delete" title="حذف الصفحة" onclick="askDelete('vente')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>
+      </div>
+      <div class="ptab-wrap">
+        <button class="ptab" data-id="force" onclick="switchPage('force', this)">LP Force de Vente</button>
+        <button class="ptab-delete" title="حذف الصفحة" onclick="askDelete('force')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>
+      </div>
+    </div>
+
+    <!-- Metrics -->
+    <div class="metrics-grid" id="metrics-grid"></div>
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+      <div class="card">
+        <div class="card-title"><span class="card-title-dot" style="background:var(--blue)"></span>الزوار اليومية</div>
+        <div class="card-sub">توزيع الزيارات على مدار الفترة المختارة</div>
+        <div style="position:relative;height:220px;">
+          <canvas id="visitorsChart" role="img" aria-label="رسم بياني للزوار اليومية">بيانات الزوار اليومية</canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="card-title-dot" style="background:var(--green)"></span>الأجهزة</div>
+        <div class="card-sub">توزيع الزوار حسب الجهاز</div>
+        <div style="position:relative;height:160px;">
+          <canvas id="deviceChart" role="img" aria-label="دائرة توزيع الأجهزة">بيانات الأجهزة</canvas>
+        </div>
+        <div class="device-list" id="device-list"></div>
+      </div>
+    </div>
+
+    <!-- Exit Sections -->
+    <div class="card" id="exit-card" style="margin-bottom:0;">
+      <div class="card-title"><span class="card-title-dot" style="background:var(--navy)"></span>نقاط الخروج — أين يغادر الزوار؟</div>
+      <div class="card-sub">النسبة المئوية للزوار الذين غادروا في كل قسم</div>
+      <div id="exit-sections"></div>
+    </div>
+
+    <!-- Bottom Row -->
+    <div class="bottom-row">
+      <div class="card">
+        <div class="card-title"><span class="card-title-dot" style="background:var(--green)"></span>معدل التحويل بالصفحة</div>
+        <div class="card-sub">مقارنة أداء كل صفحة</div>
+        <div style="position:relative;height:200px;">
+          <canvas id="convChart" role="img" aria-label="رسم بياني لمعدل التحويل">بيانات التحويل</canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="card-title-dot" style="background:var(--navy)"></span>مقارنة الصفحات</div>
+        <div class="card-sub">ملخص إحصائيات كل صفحة هبوط</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>الصفحة</th>
+                <th>الزوار</th>
+                <th>الوقت</th>
+                <th>التحويل</th>
+              </tr>
+            </thead>
+            <tbody id="pages-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ── Modal ── -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" style="width:520px;">
+    <h3>➕ إضافة صفحة هبوط جديدة</h3>
+    <p>أدخل الاسم والمعرّف وسيظهر كود Tracking جاهزاً للنسخ فوراً</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label>اسم الصفحة (للعرض)</label>
+        <input type="text" id="inp-name" placeholder="LP Formation Leadership" oninput="livePreview()" />
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label>المعرّف (بالإنجليزية)</label>
+        <input type="text" id="inp-id" placeholder="leadership" oninput="livePreview()" />
+      </div>
+    </div>
+
+    <div class="code-section" id="code-section" style="display:none;">
+      <div class="code-section-label">
+        <span>كود Tracking — أضفه قبل &lt;/body&gt; في صفحتك</span>
+        <button class="btn-copy" id="btn-copy" onclick="copyCode()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          نسخ الكود
+        </button>
+      </div>
+      <div class="code-block" id="code-output"></div>
+    </div>
+
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn-ghost" onclick="closeModal()">إلغاء</button>
+      <button class="btn-confirm" id="btn-confirm-add" onclick="confirmAdd()" disabled style="opacity:0.5;">إضافة للـ Dashboard ←</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete Confirm Modal ── -->
+<div class="del-modal-overlay" id="del-modal-overlay">
+  <div class="del-modal">
+    <div class="del-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+    </div>
+    <h3>حذف الصفحة</h3>
+    <p>هل أنت متأكد من حذف صفحة<br><strong id="del-page-name" style="color:var(--navy)"></strong> ؟</p>
+    <div class="del-warning">
+      ⚠️ لا يمكن التراجع عن هذا الإجراء — ستُحذف الصفحة وجميع بياناتها نهائياً
+    </div>
+    <div class="del-actions">
+      <button class="btn-ghost" onclick="closeDelModal()">إلغاء</button>
+      <button class="btn-delete-confirm" onclick="confirmDelete()">نعم، احذف الصفحة</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast ── -->
+<div class="toast" id="toast">
+  <div class="toast-dot"></div>
+  <span id="toast-msg">تمت الإضافة بنجاح!</span>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────
+const PAGES = {
+  vente: {
+    name: 'LP Management équipe vente',
+    visitors: 1284, mobile: 68, desktop: 32,
+    avgTime: '3:42', avgTimeSec: 222, clicks: 187,
+    exits: [
+      { s: 'Hero / رأس الصفحة', pct: 22 },
+      { s: 'عن البرنامج', pct: 18 },
+      { s: 'الفوائد والمميزات', pct: 15 },
+      { s: 'الشهادات', pct: 12 },
+      { s: 'الأسعار', pct: 28 },
+      { s: 'CTA النهائي', pct: 5 },
+    ],
+    daily30: [42,55,38,61,70,58,65,72,48,50,67,80,75,62,55,69,71,83,90,78,65,70,88,95,82,74,68,79,85,91],
+  },
+  force: {
+    name: 'LP Force de Vente',
+    visitors: 876, mobile: 74, desktop: 26,
+    avgTime: '2:58', avgTimeSec: 178, clicks: 143,
+    exits: [
+      { s: 'Hero / رأس الصفحة', pct: 30 },
+      { s: 'المشكلة والحل', pct: 20 },
+      { s: 'المميزات', pct: 14 },
+      { s: 'من أنا؟', pct: 10 },
+      { s: 'الأسعار', pct: 20 },
+      { s: 'CTA النهائي', pct: 6 },
+    ],
+    daily30: [30,38,25,44,52,40,48,55,33,36,50,60,57,46,40,52,54,64,70,60,48,53,66,72,63,57,51,60,65,70],
+  }
+};
+
+let extraPages = {};
+let currentPageId = 'all';
+let visitorsChartInst = null, deviceChartInst = null, convChartInst = null;
+
+// ─── HELPERS ─────────────────────────────────────────
+function allData() {
+  const all = [...Object.values(PAGES), ...Object.values(extraPages)];
+  const v = all.reduce((s,p)=>s+p.visitors,0);
+  const cl = all.reduce((s,p)=>s+p.clicks,0);
+  const mob = Math.round(all.reduce((s,p)=>s+p.mobile,0)/all.length);
+  const sec = Math.round(all.reduce((s,p)=>s+p.avgTimeSec,0)/all.length);
+  const m=Math.floor(sec/60),s2=sec%60;
+  const daily = PAGES.vente.daily30.map((v2,i)=>{
+    let t=v2+(PAGES.force.daily30[i]||0);
+    Object.values(extraPages).forEach(p=>{ t+=(p.daily30[i]||0); });
+    return t;
+  });
+  return {
+    visitors:v, mobile:mob, desktop:100-mob,
+    avgTime:m+':'+(s2<10?'0':'')+s2, avgTimeSec:sec,
+    clicks:cl, daily30:daily,
+    exits:[
+      {s:'Hero / رأس الصفحة',pct:26},{s:'المحتوى الأول',pct:19},
+      {s:'المميزات',pct:14},{s:'الشهادات / من أنا',pct:11},
+      {s:'الأسعار',pct:24},{s:'CTA النهائي',pct:6},
+    ]
+  };
+}
+
+function getData(id) {
+  if(id==='all') return allData();
+  return PAGES[id] || extraPages[id];
+}
+
+function convRate(d) { return ((d.clicks/d.visitors)*100).toFixed(1); }
+function convClass(r) {
+  const v=parseFloat(r);
+  if(v>15) return 'pill-green';
+  if(v>8) return 'pill-orange';
+  return 'pill-red';
+}
+
+function exitColor(pct) {
+  if(pct>=25) return '#E24B4A';
+  if(pct>=15) return '#EF9F27';
+  return '#91be3f';
+}
+
+function periodDays() { return parseInt(document.getElementById('period-sel').value); }
+
+function sliceDays(daily) {
+  const d=periodDays();
+  return d===30?daily:daily.slice(-d);
+}
+
+// ─── RENDER ──────────────────────────────────────────
+function renderMetrics(data) {
+  const rate = convRate(data);
+  const rateCol = parseFloat(rate)>15?'#5f8a1a':parseFloat(rate)>8?'#a0620a':'#a32d2d';
+  const cards = [
+    { label:'إجمالي الزوار', val:data.visitors.toLocaleString(), delta:'↑ 12%', up:true, icon:usersSVG(), cls:'c-navy', ico:'navy' },
+    { label:'من الهاتف', val:data.mobile+'%', delta:Math.round(data.visitors*data.mobile/100).toLocaleString()+' زيارة', up:null, icon:mobileSVG(), cls:'c-blue', ico:'blue' },
+    { label:'من الحاسوب', val:data.desktop+'%', delta:Math.round(data.visitors*data.desktop/100).toLocaleString()+' زيارة', up:null, icon:desktopSVG(), cls:'c-blue', ico:'blue' },
+    { label:'متوسط وقت البقاء', val:data.avgTime, delta:'↑ 0:18 vs السابق', up:true, icon:clockSVG(), cls:'c-green', ico:'green' },
+    { label:'ضغطات التسجيل', val:data.clicks.toLocaleString(), delta:'↑ 8% vs السابق', up:true, icon:clickSVG(), cls:'c-green', ico:'green' },
+    { label:'معدل التحويل', val:`<span style="color:${rateCol}">${rate}%</span>`, delta:'من '+data.visitors.toLocaleString()+' زيارة', up:null, icon:convSVG(), cls:'c-navy', ico:'navy' },
+  ];
+  document.getElementById('metrics-grid').innerHTML = cards.map((c,i)=>`
+    <div class="metric-card ${c.cls}" style="animation-delay:${i*0.06}s">
+      <div class="metric-icon ${c.ico}">${c.icon}</div>
+      <div class="metric-label">${c.label}</div>
+      <div class="metric-val">${c.val}</div>
+      <div class="metric-delta ${c.up===true?'up':c.up===false?'down':''}">${c.delta}</div>
+    </div>
+  `).join('');
+}
+
+function renderVisitorsChart(data) {
+  if(visitorsChartInst) visitorsChartInst.destroy();
+  const days = sliceDays(data.daily30);
+  const labels = Array.from({length:days.length},(_,i)=>{
+    const d=new Date(); d.setDate(d.getDate()-days.length+1+i);
+    return (d.getMonth()+1)+'/'+(d.getDate());
+  });
+  visitorsChartInst = new Chart(document.getElementById('visitorsChart'),{
+    type:'line',
+    data:{
+      labels,
+      datasets:[{
+        label:'زوار',data:days,
+        borderColor:'#1b75bc',
+        backgroundColor:'rgba(27,117,188,0.08)',
+        fill:true,tension:0.4,pointRadius:2,borderWidth:2,
+        pointBackgroundColor:'#1b75bc',
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{maxTicksLimit:8,font:{size:11,family:'Cairo'}},grid:{display:false}},
+        y:{ticks:{font:{size:11,family:'Cairo'}},grid:{color:'rgba(0,0,0,0.05)'}}
+      }
+    }
+  });
+}
+
+function renderDeviceChart(data) {
+  if(deviceChartInst) deviceChartInst.destroy();
+  deviceChartInst = new Chart(document.getElementById('deviceChart'),{
+    type:'doughnut',
+    data:{
+      labels:['الهاتف','الحاسوب'],
+      datasets:[{
+        data:[data.mobile,data.desktop],
+        backgroundColor:['#1b75bc','#91be3f'],
+        borderWidth:0,
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+c.parsed+'%'}}},
+      cutout:'68%',
+    }
+  });
+  document.getElementById('device-list').innerHTML = `
+    <div class="device-row-item">
+      <div class="device-name"><span class="device-badge" style="background:#1b75bc;"></span>الهاتف</div>
+      <div style="font-family:'Outfit',sans-serif;font-weight:700;color:#1b75bc;">${data.mobile}% <span style="font-size:12px;color:#6b7280;font-weight:400;">(${Math.round(data.visitors*data.mobile/100).toLocaleString()})</span></div>
+    </div>
+    <div class="device-row-item">
+      <div class="device-name"><span class="device-badge" style="background:#91be3f;"></span>الحاسوب</div>
+      <div style="font-family:'Outfit',sans-serif;font-weight:700;color:#7aa533;">${data.desktop}% <span style="font-size:12px;color:#6b7280;font-weight:400;">(${Math.round(data.visitors*data.desktop/100).toLocaleString()})</span></div>
+    </div>
+  `;
+}
+
+function renderExits(data) {
+  document.getElementById('exit-sections').innerHTML = data.exits.map(e=>`
+    <div class="exit-row">
+      <div class="exit-name">${e.s}</div>
+      <div class="exit-bar-bg"><div class="exit-bar-fill" style="width:${e.pct}%;background:${exitColor(e.pct)};"></div></div>
+      <div class="exit-pct">${e.pct}%</div>
+    </div>
+  `).join('');
+}
+
+function renderConvChart() {
+  if(convChartInst) convChartInst.destroy();
+  const allP = [
+    {name:'LP Mgmt vente', rate:parseFloat(convRate(PAGES.vente))},
+    {name:'LP Force vente', rate:parseFloat(convRate(PAGES.force))},
+    ...Object.values(extraPages).map(p=>({name:p.name.substring(0,14)+'…',rate:parseFloat(convRate(p))}))
+  ];
+  const bgColors = allP.map(p=>p.rate>15?'rgba(145,190,63,0.8)':p.rate>8?'rgba(240,159,39,0.8)':'rgba(217,83,79,0.7)');
+  convChartInst = new Chart(document.getElementById('convChart'),{
+    type:'bar',
+    data:{
+      labels:allP.map(p=>p.name),
+      datasets:[{
+        label:'معدل التحويل %',
+        data:allP.map(p=>p.rate),
+        backgroundColor:bgColors,
+        borderRadius:6,borderWidth:0,
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{font:{size:11,family:'Cairo'},autoSkip:false,maxRotation:0},grid:{display:false}},
+        y:{ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}}
+      }
+    }
+  });
+}
+
+function renderTable() {
+  const rows = [
+    PAGES.vente, PAGES.force,
+    ...Object.values(extraPages)
+  ];
+  document.getElementById('pages-tbody').innerHTML = rows.map(r=>{
+    const rate = convRate(r);
+    return `<tr>
+      <td class="td-page">${r.name.length>22?r.name.substring(0,22)+'…':r.name}</td>
+      <td style="font-family:'Outfit',sans-serif;font-weight:600;">${r.visitors.toLocaleString()}</td>
+      <td>${r.avgTime}</td>
+      <td><span class="conv-pill ${convClass(rate)}">${rate}%</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderAll(id) {
+  const d = getData(id);
+  renderMetrics(d);
+  renderVisitorsChart(d);
+  renderDeviceChart(d);
+  renderExits(d);
+  renderConvChart();
+  renderTable();
+  const n = id==='all'?'جميع الصفحات':(PAGES[id]||extraPages[id]||{}).name;
+  document.getElementById('page-heading').textContent = 'نظرة عامة — '+n;
+}
+
+// ─── EVENTS ──────────────────────────────────────────
+function switchPage(id, el) {
+  currentPageId = id;
+  document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderAll(id);
+}
+
+function setNav(el) {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function onPeriodChange() {
+  renderAll(currentPageId);
+}
+
+function openModal() {
+  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('code-section').style.display='none';
+  document.getElementById('inp-name').value='';
+  document.getElementById('inp-id').value='';
+  document.getElementById('btn-confirm-add').disabled=true;
+  document.getElementById('btn-confirm-add').style.opacity='0.5';
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function buildRawCode(name, id) {
+  return `<!-- Beecoss Analytics Tracker — ${name} -->
+<script>
+(function(){
+  const PAGE_ID = "${id}";
+  const API = "https://your-api.com/track";
+  const data = {
+    pageId: PAGE_ID,
+    device: /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop",
+    start: Date.now(), section: null, converted: false,
+  };
+  document.querySelectorAll("section[id]").forEach(s=>{
+    new IntersectionObserver(e=>{ if(e[0].isIntersecting) data.section=e[0].target.id; },{threshold:0.4}).observe(s);
+  });
+  document.querySelectorAll(".cta-btn,[data-track='register']").forEach(b=>{
+    b.addEventListener("click",()=>{ data.converted=true; send("click"); });
+  });
+  function send(type){
+    navigator.sendBeacon(API, JSON.stringify({...data, type, time: Math.round((Date.now()-data.start)/1000)}));
+  }
+  window.addEventListener("pagehide", ()=>send("exit"));
+})();
+<\/script>`;
+}
+
+function buildHighlightedCode(name, id) {
+  return `<span class="cmt">&lt;!-- Beecoss Analytics Tracker — ${name} --&gt;</span>
+<span class="kw">&lt;script&gt;</span>
+(function(){
+  <span class="kw">const</span> PAGE_ID = <span class="str">"${id}"</span>;
+  <span class="kw">const</span> API = <span class="str">"https://your-api.com/track"</span>;
+  <span class="kw">const</span> data = {
+    pageId: PAGE_ID,
+    device: /Mobi|Android/i.test(navigator.userAgent) ? <span class="str">"mobile"</span> : <span class="str">"desktop"</span>,
+    start: Date.now(), section: <span class="kw">null</span>, converted: <span class="kw">false</span>,
+  };
+  document.querySelectorAll(<span class="str">"section[id]"</span>).forEach(s=>{
+    <span class="kw">new</span> IntersectionObserver(e=>{ <span class="kw">if</span>(e[0].isIntersecting) data.section=e[0].target.id; },{threshold:0.4}).observe(s);
+  });
+  document.querySelectorAll(<span class="str">".cta-btn,[data-track='register']"</span>).forEach(b=>{
+    b.addEventListener(<span class="str">"click"</span>,()=>{ data.converted=<span class="kw">true</span>; send(<span class="str">"click"</span>); });
+  });
+  <span class="kw">function</span> send(type){
+    navigator.sendBeacon(API, JSON.stringify({...data, type, time: Math.round((Date.now()-data.start)/1000)}));
+  }
+  window.addEventListener(<span class="str">"pagehide"</span>, ()=>send(<span class="str">"exit"</span>));
+})();
+<span class="kw">&lt;/script&gt;</span>`;
+}
+
+let _deleteTargetId = null;
+
+function askDelete(id) {
+  const p = PAGES[id] || extraPages[id];
+  if(!p) return;
+  _deleteTargetId = id;
+  document.getElementById('del-page-name').textContent = p.name;
+  document.getElementById('del-modal-overlay').classList.add('open');
+}
+
+function closeDelModal() {
+  document.getElementById('del-modal-overlay').classList.remove('open');
+  _deleteTargetId = null;
+}
+
+function confirmDelete() {
+  const id = _deleteTargetId;
+  if(!id) return;
+  const name = (PAGES[id] || extraPages[id] || {}).name || id;
+
+  // remove from data
+  delete PAGES[id];
+  delete extraPages[id];
+
+  // remove tab element
+  const tab = document.querySelector(`.ptab[data-id="${id}"]`);
+  if(tab) {
+    const wrap = tab.closest('.ptab-wrap');
+    if(wrap) wrap.remove(); else tab.remove();
+  }
+
+  // if currently viewing deleted page → go back to all
+  if(currentPageId === id) {
+    currentPageId = 'all';
+    document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
+    document.querySelector('.ptab-all').classList.add('active');
+    renderAll('all');
+  } else {
+    renderConvChart(); renderTable();
+  }
+
+  closeDelModal();
+  showToast('🗑️ تم حذف "'+name+'" نهائياً');
+}
+
+function livePreview() {
+  const name = document.getElementById('inp-name').value.trim();
+  const id = document.getElementById('inp-id').value.trim().replace(/\s+/g,'_').toLowerCase();
+  const confirmBtn = document.getElementById('btn-confirm-add');
+  const codeSection = document.getElementById('code-section');
+
+  if(name && id) {
+    _rawCode = buildRawCode(name, id);
+    document.getElementById('code-output').innerHTML = buildHighlightedCode(name, id);
+    codeSection.style.display = 'block';
+    confirmBtn.disabled = false;
+    confirmBtn.style.opacity = '1';
+    // reset copy btn
+    const cb = document.getElementById('btn-copy');
+    cb.classList.remove('copied');
+    cb.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> نسخ الكود`;
+  } else {
+    codeSection.style.display = 'none';
+    confirmBtn.disabled = true;
+    confirmBtn.style.opacity = '0.5';
+  }
+}
+
+function copyCode() {
+  if(!_rawCode) return;
+  navigator.clipboard.writeText(_rawCode).then(()=>{
+    const cb = document.getElementById('btn-copy');
+    cb.classList.add('copied');
+    cb.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> تم النسخ!`;
+    setTimeout(()=>{
+      cb.classList.remove('copied');
+      cb.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> نسخ الكود`;
+    }, 2500);
+  });
+}
+
+function confirmAdd() {
+  const name = document.getElementById('inp-name').value.trim();
+  const id = document.getElementById('inp-id').value.trim().replace(/\s+/g,'_').toLowerCase();
+  if(!name||!id) return;
+
+  extraPages[id] = {
+    name, visitors:0, mobile:65, desktop:35,
+    avgTime:'0:00', avgTimeSec:0, clicks:0,
+    daily30:Array(30).fill(0),
+    exits:[
+      {s:'Hero / رأس الصفحة',pct:0},{s:'المحتوى',pct:0},
+      {s:'المميزات',pct:0},{s:'الأسعار',pct:0},{s:'CTA',pct:0},
+    ]
+  };
+
+  const tabs = document.getElementById('page-tabs');
+  const wrap = document.createElement('div');
+  wrap.className = 'ptab-wrap';
+  const btn = document.createElement('button');
+  btn.className='ptab'; btn.dataset.id=id;
+  btn.textContent=name;
+  btn.onclick=()=>switchPage(id,btn);
+  const delBtn = document.createElement('button');
+  delBtn.className='ptab-delete'; delBtn.title='حذف الصفحة';
+  delBtn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>`;
+  delBtn.onclick=()=>askDelete(id);
+  wrap.appendChild(btn); wrap.appendChild(delBtn);
+  tabs.appendChild(wrap);
+
+  renderConvChart(); renderTable();
+  closeModal();
+  showToast('✅ تمت إضافة "'+name+'" — لا تنسَ لصق الكود في صفحتك!');
+}
+
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ─── ICONS ───────────────────────────────────────────
+function usersSVG(){ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`; }
+function mobileSVG(){ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18.01" stroke-linecap="round"/></svg>`; }
+function desktopSVG(){ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="18" x2="12" y2="21"/></svg>`; }
+function clockSVG(){ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`; }
+function clickSVG(){ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z"/></svg>`; }
+function convSVG(){ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`; }
+
+// ─── INIT ─────────────────────────────────────────────
+renderAll('all');
+</script>
+</body>
+</html>
